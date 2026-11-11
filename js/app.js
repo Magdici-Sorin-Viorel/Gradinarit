@@ -21,7 +21,7 @@
   var SOILTEST_KEY = 'gradina-banat.soiltests.v1'; // [{ id, date, place, ph, method, type, fizz, note }]
   var DONE_KEY = 'gradina-banat.done.v1';   // { '2026': { 'mar|11|Tăiere…': '2026-11-11' } }
   /** Shown in Settings. Keep in step with CACHE_VERSION in sw.js. */
-  var APP_VERSION = 'v32';
+  var APP_VERSION = 'v33';
 
   var viewEl = document.getElementById('view');
   var sheetEl = document.getElementById('sheet');
@@ -1766,7 +1766,7 @@
   }
 
   // ---- "Give the app to someone": QR + link (same idea as BeeManager settings) ----
-  var APP_HOME = 'https://magdici-sorin-viorel.github.io/gradinarit/';
+  var APP_HOME = 'https://magdici-sorin-viorel.github.io/Gradinarit/';  // exact repo name (Pages paths are case-sensitive)
   /** The app's public address: where it runs when that is GitHub Pages, otherwise the real GitHub Pages address. */
   function appUrl() {
     var base = /github\.io$/.test(location.hostname) ? location.origin + location.pathname : APP_HOME;

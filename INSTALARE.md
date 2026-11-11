@@ -15,7 +15,7 @@ Aplicația trebuie pusă pe internet (gratuit, pe GitHub Pages) ca s-o poți ins
 5. Mergi la **Settings** → **Pages** (în meniul din stânga).
    - La **Branch** alege `main` și `/ (root)` → **Save**.
 6. După 1–2 minute apare sus adresa aplicației, de forma:
-   `https://NUMELE-TAU.github.io/gradinarit/`
+   `https://NUMELE-TAU.github.io/NUMELE-REPO/` (exact cum se numește repo-ul, cu majuscule; la tine: `https://magdici-sorin-viorel.github.io/Gradinarit/`)
 
 ## 2. Instaleaz-o pe telefon (Android)
 
