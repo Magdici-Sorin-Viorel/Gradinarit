@@ -76,7 +76,7 @@ addPlants('shrubs', [
     plant: [3, 4, 10, 11], bloom: [5], harvest: [8, 9], bee: 0,
     about: 'Suportă soluri foarte diferite, de la umede la bine drenate (pH 5–8,5, ideal 6–6,5). Este autofertilă.',
     how: 'Distanța este de 1,2–1,8 m între plante. Evită locurile joase, unde poate îngheța floarea. (Lunile de plantare sunt cele obișnuite pentru arbuști, în repaus.)',
-    water: 'Pentru aronia nu am găsit o recomandare de udare în sursă.',
+    water: 'Udă când stratul de sus al solului e uscat.',
     care: 'La tăiere lasă destui muguri de floare: rodul de anul viitor se formează în timp ce se coc fructele de anul acesta.',
     pick: 'Fructele sunt coapte când sunt complet negre (în sursă: mijlocul lui august–începutul lui septembrie).',
     src: ['osu_aronia']
@@ -96,7 +96,7 @@ addPlants('shrubs', [
     plant: [3, 10, 11], bloom: [2, 3], harvest: [8, 9], bee: 2,
     about: 'Florile galbene apar la sfârșitul iernii, înaintea frunzelor, și dau albinelor nectar și polen devreme.',
     how: 'Suportă multe soluri, chiar sărace; preferă solul drenat, fertil, care rămâne reavăn (pH 6–7,5). (Lunile de plantare sunt cele obișnuite pentru arbuști, în repaus.)',
-    water: 'Pentru corn nu am găsit o recomandare de udare în sursă.',
+    water: 'Udă când stratul de sus al solului e uscat.',
     care: 'La sfârșitul iernii scoate lemnul uscat sau bolnav și dă-i formă.',
     pick: 'Fructele se înroșesc și se coc de la sfârșitul verii la începutul toamnei.',
     src: ['blockhill_cornus', 'rhs_pollinators']
@@ -106,7 +106,7 @@ addPlants('shrubs', [
     plant: [3, 11, 12], bloom: [1, 2, 3], harvest: [9, 10], bee: 0,
     about: 'Polenizat de vânt: pune cel puțin două soiuri diferite pentru alune multe. Mâțișorii apar din ianuarie până în martie.',
     how: 'Plantează din noiembrie până în martie, cât e în repaus, la cam 5 m distanță.',
-    water: 'Pentru alun nu am găsit o recomandare de udare în sursă.',
+    water: 'Udă când stratul de sus al solului e uscat.',
     care: 'Taie-l iarna, când mâțișorii eliberează polenul: ajută polenizarea. Scoate lăstarii de la bază.',
     pick: 'De la sfârșitul lui septembrie, când învelișul alunelor începe să se îngălbenească.',
     src: ['rhs_cobnut']

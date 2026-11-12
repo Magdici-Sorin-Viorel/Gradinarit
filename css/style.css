@@ -1021,3 +1021,13 @@ a.tb-btn { text-decoration: none; }
 .st-del .btn { width: auto; margin: 0; min-height: 34px; padding: 6px 12px; font-size: .8rem; }
 .st-adv { color: var(--txt); }
 .st-fit { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--bdr); }
+
+/* ---------- Grădina mea: one page with jobs and plants (v35) ---------- */
+.gm-sec { margin-top: 14px; }
+.gm-h { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; font-size: 1.02rem; }
+.gm-h i { color: var(--gold); }
+.gm-none { font-size: .9rem; padding: 6px 2px; }
+.gm-done { margin-top: 12px; }
+.gm-done summary { cursor: pointer; font-weight: 700; font-size: .88rem; color: var(--mut); margin-bottom: 8px; }
+.gm-foot { margin-top: 18px; text-align: center; }
+.gm-foot a { color: var(--gold); }

@@ -71,3 +71,4 @@ Visual design follows the BeeManager Pro app (dark theme with gold accent, botto
 Chei noi în localStorage: `gradina-banat.done.v1` (bife pe an), `gradina-banat.soiltests.v1` (măsurătorile de sol).
 - **v32:** aplicația se deschide din nou pe Calendar, la luna curentă.
 - **v33:** adresa aplicației din QR și link scrisă exact ca repo-ul: https://magdici-sorin-viorel.github.io/Gradinarit/
+- **v35:** „Azi în grădină” și „Grădina mea” sunt o singură pagină: lucrările lunii sus, plantele dedesubt. Vechiul link #azi duce acolo.

@@ -19,7 +19,7 @@ addPlants('vegetables', [
     plant: [4, 5], harvest: [],
     about: 'Se plantează afară ca răsad.',
     how: 'Calendarele locale dau plantarea răsadurilor între 10 aprilie și 20 mai, în sol bine pregătit. Ardeiul nu suportă frigul: plantează devreme (aprilie) doar dacă nu mai e risc de îngheț și nopțile rămân peste 10 °C; altfel așteaptă luna mai.',
-    water: 'Udă regulat; pentru ardei nu am găsit o recomandare separată în sursă. Mulcește după udare.',
+    water: 'Udă regulat. Mulcește după udare.',
     src: ['agrointel_cal', 'agrotv_cal', 'evz_legume', 'rhs_vegwater']
   },
   {
@@ -35,7 +35,7 @@ addPlants('vegetables', [
     plant: [4, 5, 6, 7], harvest: [],
     about: 'Se seamănă direct în grădină, în mai multe serii.',
     how: 'Seamănă direct de la sfârșitul lui aprilie, în mai și până la sfârșitul lui iunie, la câte 10 zile. Mai poți semăna și la mijlocul lui iulie.',
-    water: 'Udă regulat; pentru castraveți nu am găsit o recomandare separată în sursă. Mulcește după udare.',
+    water: 'Udă regulat. Mulcește după udare.',
     src: ['agrointel_cal', 'agrotv_cal', 'evz_legume', 'rhs_vegwater']
   },
   {
@@ -107,7 +107,7 @@ addPlants('vegetables', [
     plant: [2, 3, 11], harvest: [],
     about: 'Se pune la sfârșitul iernii sau toamna.',
     how: 'Se pune de la sfârșitul lui februarie până pe 10 martie, sau la începutul lui noiembrie pentru recoltă timpurie anul următor.',
-    water: 'Pentru usturoi nu am găsit o recomandare de udare în sursă.',
+    water: 'Udă când stratul de sus al solului e uscat.',
     src: ['agrointel_cal', 'agrotv_cal', 'evz_legume']
   },
   {
@@ -139,7 +139,7 @@ addPlants('vegetables', [
     plant: [2, 3, 4, 7, 8], harvest: [],
     about: 'Ridichile de lună se seamănă primăvara devreme, cele de vară în aprilie și cele de iarnă la sfârșitul verii.',
     how: 'Ridichile de lună se seamănă de la sfârșitul lui februarie până la sfârșitul lui martie. Ridichile de vară se seamănă în 1–20 aprilie. Ridichile de iarnă se seamănă de la sfârșitul lui iulie până pe 10 august.',
-    water: 'Pentru ridichi nu am găsit o recomandare separată de udare în sursă.',
+    water: 'Udă când stratul de sus al solului e uscat.',
     src: ['agrointel_cal', 'agrotv_cal']
   },
   {
@@ -163,7 +163,7 @@ addPlants('vegetables', [
     plant: [2, 3, 4, 7, 8, 9, 10], harvest: [],
     about: 'Se seamănă primăvara devreme și din nou de la sfârșitul verii până toamna.',
     how: 'Seamănă de la sfârșitul lui februarie până pe 20 aprilie. Din nou de la sfârșitul lui iulie până în septembrie. Semănat în 1–10 octombrie, dă recoltă timpurie primăvara.',
-    water: 'Pentru spanac nu am găsit o recomandare separată de udare în sursă.',
+    water: 'Udă când stratul de sus al solului e uscat.',
     src: ['agrointel_cal', 'agrotv_cal']
   },
   {
@@ -223,7 +223,7 @@ addPlants('vegetables', [
     plant: [4], harvest: [],
     about: 'Se plantează ca răsad.',
     how: 'Se plantează de la mijlocul lui aprilie, la 40 cm între rânduri și 40 cm pe rând.',
-    water: 'Pentru țelină nu am găsit o recomandare separată de udare în sursă.',
+    water: 'Udă când stratul de sus al solului e uscat.',
     src: ['agrointel_cal', 'agrotv_cal']
   },
   {

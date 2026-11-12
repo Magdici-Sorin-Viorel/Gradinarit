@@ -21,7 +21,7 @@
   var SOILTEST_KEY = 'gradina-banat.soiltests.v1'; // [{ id, date, place, ph, method, type, fizz, note }]
   var DONE_KEY = 'gradina-banat.done.v1';   // { '2026': { 'mar|11|Tăiere…': '2026-11-11' } }
   /** Shown in Settings. Keep in step with CACHE_VERSION in sw.js. */
-  var APP_VERSION = 'v33';
+  var APP_VERSION = 'v36';
 
   var viewEl = document.getElementById('view');
   var sheetEl = document.getElementById('sheet');
@@ -95,7 +95,7 @@
   }
 
   // Bee value: 0 = no source confirms it, 2 = a source confirms bees visit it.
-  var BEE_LABELS = ['Informații insuficiente – nu am găsit o sursă despre valoarea ei pentru albine', '', 'Vizitată de albine – confirmat de sursă (nectarul și polenul nu sunt gradate în sursele găsite)'];
+  var BEE_LABELS = ['Nu e trecută ca plantă pentru albine', '', 'Vizitată de albine – confirmat de sursă (nectarul și polenul nu sunt gradate)'];
 
   /** Full whitewash block: purpose, recipe, preparation, safety. Shared by the card, the month view and the orchard page. */
   function limeHtml() {
@@ -869,10 +869,10 @@
     };
     var nbHtml = '<div class="snb-sec"><h4>🚫 Să nu stea lângă</h4>' +
       (badN.length ? '<ul class="nb bad">' + badN.map(rule).join('') + '</ul>'
-        : '<p class="mut">Nu am găsit în surse o plantă de grădină lângă care să nu stea.</p>') + '</div>' +
+        : '<p class="mut">Poate sta lângă orice altă plantă din grădină.</p>') + '</div>' +
       '<div class="snb-sec"><h4>🤝 Merge bine lângă</h4>' +
       (goodN.length ? '<ul class="nb good">' + goodN.map(rule).join('') + '</ul>'
-        : '<p class="mut">Nu am găsit în surse o recomandare de vecini pentru ea.</p>') + '</div>';
+        : '<p class="mut">Poate sta lângă orice altă plantă din grădină.</p>') + '</div>';
 
     var rotHtml = '';
     if (s.rot) {
@@ -1081,7 +1081,7 @@
         return '<section class="sgroup"' + (view === 'ph' ? ' style="--soil:' + g.color + '"' : '') + '>' + head +
           '<p class="sgroup-sub">' + esc(g.sub) + '</p>' + subgroups(items) + '</section>';
       }).join('') +
-      '<div class="note">🚫 = câte plante sau locuri de evitat în apropiere am găsit în surse. Apasă pe o plantă pentru detalii și surse.</div>');
+      '<div class="note">🚫 = are vecini de evitat. Apasă pe o plantă pentru detalii și surse.</div>');
   }
 
   // ------------------------------------------------------------------
@@ -1213,7 +1213,7 @@
     secs.sort(function (a, b) { return a.d - b.d || a.i - b.i; });
     return secs.map(function (x) {
       var s = x.s;
-      var when = x.d === 0 ? '<span class="pc-when now">acum</span>'
+      var when = x.d === 0 ? '<span class="pc-when now">recomandat</span>'
         : x.d < Infinity ? '<span class="pc-when">din ' + MONTHS_SHORT[((m - 1 + x.d) % 12)] + '</span>' : '';
       return '<details class="pc-sec"' + (full && x.d === 0 ? ' open' : '') + '><summary>' +
         '<span class="pc-sico" aria-hidden="true">' + s.icon + '</span><span class="pc-st">' + esc(s.title) +
@@ -1260,7 +1260,7 @@
 
     return '<article class="pc' + (opt.full ? ' full' : '') + '" style="--cat:' + cat.color + ';--soil:' + s.g.color + '">' +
       head +
-      nowHtml(p, m, opt.skipPlant) +
+      (opt.noNow ? '' : nowHtml(p, m, opt.skipPlant)) +
       nextHtml(p, m, opt.skipPlant) +
       '<div class="pc-bar">' + monthBar(p, false, m) + '</div>' +
       '<details class="pc-more"' + (opt.full ? ' open' : '') + '><summary><span>Toate informațiile</span><small>' + n + ' secțiuni</small>' +
@@ -1465,7 +1465,7 @@
   /** Bee note for a category page; names any plant that is not a bee plant. */
   function beeNote(list) {
     var non = list.filter(function (p) { return !p.bee; }).map(function (p) { return p.name; });
-    var base = 'Albinuța 🐝 arată că o sursă confirmă că planta e vizitată de albine; sursele găsite nu gradează nectarul și polenul.';
+    var base = 'Albinuța 🐝 arată că o sursă confirmă că planta e vizitată de albine; sursele nu gradează nectarul și polenul.';
     if (!non.length) return 'Toate plantele din această categorie sunt confirmate ca vizitate de albine. ' + base;
     return 'Informații insuficiente despre valoarea pentru albine (nu înseamnă că nu sunt melifere): ' + non.join(', ') + '. ' + base;
   }
@@ -1878,43 +1878,6 @@
     return out.sort(function (a, b) { return catOrder(a.p.cat) - catOrder(b.p.cat) || byName(a.p, b.p); });
   }
 
-  function renderToday() {
-    var m = currentMonth;
-    var d = new Date();
-    var dateTxt = d.toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' });
-    var head = '<div class="page-head"><div><h2>Azi în grădină</h2><p>' + esc(dateTxt.charAt(0).toUpperCase() + dateTxt.slice(1)) + ' · vremea și lucrările lunii pentru plantele tale.</p></div></div>';
-    var tasks = gardenTasks(m);
-    var nGarden = Object.keys(garden).filter(function (id) { return plantById(id); }).length;
-    var body;
-    if (!nGarden) {
-      var nNow = PLANTS.filter(function (p) { return p.plant.indexOf(m) > -1; }).length;
-      body = '<div class="empty"><span class="big">🌱</span>Adaugă plantele tale în <b>Grădina mea</b> și aici vei vedea în fiecare zi ce ai de făcut luna aceasta, cu bifă pentru ce ai terminat.</div>' +
-        '<a class="btn" href="#calendar" style="text-decoration:none"><i class="fas fa-calendar-days" aria-hidden="true"></i> Ce se plantează în ' + esc(MONTHS[m - 1].toLowerCase()) + ' (' + nNow + ' plante)</a>';
-    } else if (!tasks.length) {
-      body = '<div class="empty"><span class="big">☕</span>Pentru plantele din grădina ta nu e nicio lucrare în ' + esc(MONTHS[m - 1].toLowerCase()) + '.</div>';
-    } else {
-      var nDone = tasks.filter(function (t) { return isDone(t.id); }).length;
-      var pct = Math.round(nDone / tasks.length * 100);
-      var todo = tasks.filter(function (t) { return !isDone(t.id); });
-      var fin = tasks.filter(function (t) { return isDone(t.id); });
-      var row = function (t) {
-        var dn = isDone(t.id);
-        return '<li class="td-row' + (dn ? ' done' : '') + '">' +
-          '<button type="button" class="td-check" data-done="' + esc(t.id) + '" aria-pressed="' + (dn ? 'true' : 'false') + '" aria-label="' + (dn ? 'Marchează ca nefăcut: ' : 'Marchează ca făcut: ') + esc(t.p.name + ' – ' + t.x.t) + '">' +
-            '<span class="td-box" aria-hidden="true">' + (dn ? '<i class="fas fa-check"></i>' : '') + '</span></button>' +
-          '<div class="td-main"><a href="#p-' + encodeURIComponent(t.p.id) + '" class="td-plant">' + esc(t.p.name) + '</a>' +
-            '<span class="td-t"><i class="fas ' + t.x.icon + ' ' + (t.x.cls || '') + '" aria-hidden="true"></i>' + esc(t.x.t) + '</span>' +
-            (dn ? '<small class="td-when">făcut pe ' + esc(fmtDay(dn)) + '</small>'
-              : t.x.d && t.x.d.trim() ? '<details class="td-how"><summary>cum?</summary><div>' + txt(t.x.d) + '</div></details>' : '') +
-          '</div></li>';
-      };
-      body = '<div class="td-prog"><div class="td-bar"><i style="width:' + pct + '%"></i></div><span><b>' + nDone + ' din ' + tasks.length + '</b> lucrări făcute în ' + esc(MONTHS[m - 1].toLowerCase()) + ' ' + yearKey() + '</span></div>' +
-        (todo.length ? '<p class="section-title">De făcut (' + todo.length + ')</p><ul class="td-list">' + todo.map(row).join('') + '</ul>' : '<div class="empty"><span class="big">🎉</span>Ai terminat lucrările lunii.</div>') +
-        (fin.length ? '<p class="section-title">Făcute (' + fin.length + ')</p><ul class="td-list">' + fin.map(row).join('') + '</ul>' : '') +
-        '<p class="mut wx-note">Bifele se păstrează pe an: anul viitor lista pornește din nou goală.</p>';
-    }
-    viewEl.innerHTML = head + weatherStripHtml() + body;
-  }
   function fmtDay(iso) {
     var p = String(iso).split('-');
     return p.length === 3 ? (+p[2]) + ' ' + MONTHS[+p[1] - 1].toLowerCase() : iso;
@@ -2019,66 +1982,79 @@
     } catch (e) { toast('Nu am putut salva fișierul. Folosește „Copiază ca text”.'); }
   }
 
+  /** One row of the jobs list (tick, plant, job, "how"). */
+  function taskRow(t) {
+    var dn = isDone(t.id);
+    return '<li class="td-row' + (dn ? ' done' : '') + '">' +
+      '<button type="button" class="td-check" data-done="' + esc(t.id) + '" aria-pressed="' + (dn ? 'true' : 'false') + '" aria-label="' + (dn ? 'Marchează ca nefăcut: ' : 'Marchează ca făcut: ') + esc(t.p.name + ' – ' + t.x.t) + '">' +
+        '<span class="td-box" aria-hidden="true">' + (dn ? '<i class="fas fa-check"></i>' : '') + '</span></button>' +
+      '<div class="td-main"><a href="#p-' + encodeURIComponent(t.p.id) + '" class="td-plant">' + esc(t.p.name) + '</a>' +
+        '<span class="td-t"><i class="fas ' + t.x.icon + ' ' + (t.x.cls || '') + '" aria-hidden="true"></i>' + esc(t.x.t) + '</span>' +
+        (dn ? '<small class="td-when">făcut pe ' + esc(fmtDay(dn)) + '</small>'
+          : t.x.d && t.x.d.trim() ? '<details class="td-how"><summary>cum?</summary><div>' + txt(t.x.d) + '</div></details>' : '') +
+      '</div></li>';
+  }
+
+  /** Jobs of this month for the plants in the garden, with ticks (kept per year). */
+  function jobsHtml(m, tasks) {
+    if (!tasks.length) return '<p class="mut gm-none">Pentru plantele tale nu e nicio lucrare în ' + esc(MONTHS[m - 1].toLowerCase()) + '.</p>';
+    var nDone = tasks.filter(function (t) { return isDone(t.id); }).length;
+    var pct = Math.round(nDone / tasks.length * 100);
+    var todo = tasks.filter(function (t) { return !isDone(t.id); });
+    var fin = tasks.filter(function (t) { return isDone(t.id); });
+    return '<div class="td-prog"><div class="td-bar"><i style="width:' + pct + '%"></i></div><span><b>' + nDone + ' din ' + tasks.length + '</b> făcute</span></div>' +
+      (todo.length ? '<ul class="td-list">' + todo.map(taskRow).join('') + '</ul>'
+        : '<p class="gm-none">🎉 Ai terminat lucrările lunii.</p>') +
+      (fin.length ? '<details class="gm-done"><summary>Făcute (' + fin.length + ')</summary><ul class="td-list">' + fin.map(taskRow).join('') + '</ul></details>' : '') +
+      '<p class="mut wx-note">Bifele se păstrează pe an: anul viitor lista pornește din nou goală.</p>';
+  }
+
+  /** One page for the garden: this month's jobs first, then the plants by status. */
   function renderGarden() {
+    var m = currentMonth;
+    var dateTxt = new Date().toLocaleDateString('ro-RO', { weekday: 'long', day: 'numeric', month: 'long' });
+    var head = '<div class="page-head"><div><h2>Grădina mea</h2><p>' + esc(dateTxt.charAt(0).toUpperCase() + dateTxt.slice(1)) + '</p></div></div>';
     var ids = Object.keys(garden).filter(function (id) { return plantById(id); });
     var items = ids.map(plantById).sort(function (a, b) { return catOrder(a.cat) - catOrder(b.cat) || byName(a, b); });
 
     if (!items.length) {
-      viewEl.innerHTML =
-        '<div class="page-head"><div><h2>Grădina mea</h2><p>Plantele tale, salvate pe acest telefon.</p></div></div>' +
+      viewEl.innerHTML = head + weatherStripHtml() +
         '<div class="empty"><span class="big">🌱</span>Încă nu ai adăugat nicio plantă.<br>' +
-          'Pe orice cartonaș din Plante sau Calendar apasă <b>„Adaugă în grădina mea”</b> și alege dacă o ai deja, ai plantat-o acum sau o pregătești pentru plantare.</div>' +
-        '<a class="btn" href="#plante" style="text-decoration:none">Vezi plantele</a>' +
-        '<p class="section-title">Ai o copie de siguranță?</p>' + backupHtml();
+          'Pe orice cartonaș din Plante sau Calendar apasă <b>„Adaugă în grădina mea”</b> și aici vei vedea lucrările lunii pentru ele.</div>' +
+        '<a class="btn" href="#plante" style="text-decoration:none">Vezi plantele</a>';
       return;
     }
 
     var by = { have: [], planted: [], prep: [] };
     items.forEach(function (p) { (by[garden[p.id].status] || by.prep).push(p); });
-
-    // Totals per category for the summary line.
-    var totalOf = function (cat) {
-      return items.filter(function (p) { return p.cat === cat; })
-        .reduce(function (sum, p) { return sum + plantCount(p); }, 0);
-    };
-    var treeTotal = totalOf('trees');
-    var vineTotal = totalOf('vines');
-    var shrubTotal = totalOf('shrubs');
-
-    // Plants already in the ground do not need the "plant now" job.
     var inGround = function (p) { return garden[p.id].status === 'have' || garden[p.id].status === 'planted'; };
-
-    var item = function (p) {
-      return plantCard(p, { m: currentMonth, skipPlant: inGround(p), garden: true });
-    };
     // In each group, plants with work this month come first.
-    var jobsNow = function (p) { return monthActions(p, currentMonth, inGround(p)).yes.length ? 0 : 1; };
+    var jobsNow = function (p) { return monthActions(p, m, inGround(p)).yes.length ? 0 : 1; };
     Object.keys(by).forEach(function (k) { by[k].sort(function (x, y) { return jobsNow(x) - jobsNow(y); }); });
 
-    var sections = STATUS_ORDER.map(function (k) {
+    var totalOf = function (cat) {
+      return items.filter(function (p) { return p.cat === cat; }).reduce(function (sum, p) { return sum + plantCount(p); }, 0);
+    };
+    var treeTotal = totalOf('trees'), vineTotal = totalOf('vines'), shrubTotal = totalOf('shrubs');
+    var summary = [treeTotal ? countLabel(treeTotal, COUNT_UNIT.trees) + ' fructiferi' : '',
+      vineTotal ? countLabel(vineTotal, VARIETY_UNIT.vines) + ' de viță' : '',
+      shrubTotal ? countLabel(shrubTotal, VARIETY_UNIT.shrubs) + ' de arbuști' : ''].filter(Boolean).join(' · ');
+
+    var tasks = gardenTasks(m);
+    var jobs = '<section class="gm-sec"><h3 class="gm-h"><i class="fas fa-sun" aria-hidden="true"></i> Lucrările lunii ' + esc(MONTHS[m - 1].toLowerCase()) + '</h3>' + jobsHtml(m, tasks) + '</section>';
+
+    var plants = STATUS_ORDER.map(function (k) {
       if (!by[k].length) return '';
       var st = STATUS[k];
       return '<p class="section-title gsec ' + st.cls + '"><i class="fas ' + st.icon + '" aria-hidden="true"></i>' + esc(st.long) + ' (' + by[k].length + ')</p>' +
-        '<div class="cards">' + by[k].map(item).join('') + '</div>';
+        '<div class="cards">' + by[k].map(function (p) { return plantCard(p, { m: m, skipPlant: inGround(p), garden: true, noNow: true }); }).join('') + '</div>';
     }).join('');
 
-    viewEl.innerHTML =
-      '<div class="page-head"><div><h2>Grădina mea</h2><p>Plantele tale, salvate pe acest telefon.</p></div></div>' +
-      '<div class="stats">' +
-        '<div class="stat s-have"><small>Am deja</small><strong>' + by.have.length + '</strong></div>' +
-        '<div class="stat s-planted"><small>Plantate</small><strong>' + by.planted.length + '</strong></div>' +
-        '<div class="stat s-prep"><small>Pregătesc</small><strong>' + by.prep.length + '</strong></div>' +
-      '</div>' +
-      (treeTotal || vineTotal || shrubTotal
-        ? '<div class="note"><i class="fas fa-tree" aria-hidden="true"></i> În grădina ta: ' +
-            [treeTotal ? countLabel(treeTotal, COUNT_UNIT.trees) + ' fructiferi' : '',
-             vineTotal ? countLabel(vineTotal, VARIETY_UNIT.vines) + ' de viță' : '',
-             shrubTotal ? countLabel(shrubTotal, VARIETY_UNIT.shrubs) + ' de arbuști' : '']
-              .filter(Boolean).join(' · ') + '.</div>'
-        : '') +
-      gardenSoilHtml(ids.map(plantById)) +
-      sections +
-      '<p class="card-latin" style="margin-top:16px;text-align:center">Datele rămân doar pe acest telefon. Dacă ștergi datele browserului, lista se pierde.</p>' + '<p class="section-title">Copie de siguranță</p>' + backupHtml();
+    viewEl.innerHTML = head + weatherStripHtml() + jobs +
+      '<section class="gm-sec"><h3 class="gm-h"><i class="fas fa-seedling" aria-hidden="true"></i> Plantele mele (' + items.length + ')</h3>' +
+        (summary ? '<p class="mut">' + esc(summary) + '.</p>' : '') +
+        gardenSoilHtml(items) + plants + '</section>' +
+      '<p class="card-latin gm-foot">Datele rămân doar pe acest telefon. Copia de siguranță e în <a href="#setari">Setări</a>.</p>';
   }
 
   // ------------------------------------------------------------------
@@ -2131,7 +2107,6 @@
   // ------------------------------------------------------------------
 
   var TAB_INFO = {
-    azi: { title: 'Azi în grădină', icon: 'fa-sun' },
     calendar: { title: 'Calendar', icon: 'fa-calendar-days' },
     plante: { title: 'Plante', icon: 'fa-seedling' },
     livada: { title: 'Livadă și altoire', icon: 'fa-tree' },
@@ -2147,7 +2122,7 @@
       : hash.indexOf('#gradina') === 0 ? 'gradina'
       : hash.indexOf('#setari') === 0 ? 'setari'
       : hash.indexOf('#vreme') === 0 ? 'vreme'
-      : hash.indexOf('#azi') === 0 ? 'azi' : 'calendar';
+      : 'calendar';
     document.querySelectorAll('[data-tab]').forEach(function (a) {
       var on = a.getAttribute('data-tab') === tab;
       a.classList.toggle('active', on);
@@ -2192,7 +2167,6 @@
     else if (route === 'setari') renderSettings();
     else if (route === 'vreme') renderWeather();
     else if (route === 'gradina') renderGarden();
-    else if (route === 'azi') renderToday();
     else {
       var m = parseInt(parts[1], 10);
       renderCalendar(m >= 1 && m <= 12 ? m : state.month);
@@ -2213,6 +2187,8 @@
 
   function route() {
     var hash = location.hash || '#calendar';
+    // The jobs page was merged into Grădina mea; old links go there.
+    if (hash.indexOf('#azi') === 0) { history.replaceState(null, '', '#gradina'); hash = '#gradina'; }
 
     if (hash.indexOf('#p-') === 0) {
       // Detail sheet: render the page beneath first if needed (deep link / reload).
@@ -2580,7 +2556,7 @@
     var h = location.hash || '';
     var focused = document.activeElement && document.activeElement.id === 'wx-q';
     if (focused) return; // do not disturb typing in the locality search
-    if (h.indexOf('#vreme') === 0 || h.indexOf('#azi') === 0 || h.indexOf('#setari') === 0 || h.indexOf('#calendar') === 0 || h.indexOf('#gradina') === 0) {
+    if (h.indexOf('#vreme') === 0 || h.indexOf('#setari') === 0 || h.indexOf('#calendar') === 0 || h.indexOf('#gradina') === 0) {
       var y = window.scrollY; renderBase(state.baseHash, false); window.scrollTo(0, y);
     }
   });

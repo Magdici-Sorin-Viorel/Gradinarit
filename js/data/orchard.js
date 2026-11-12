@@ -74,7 +74,7 @@
       { i: 'Var hidratat (var stins, hidroxid de calciu)', q: '1 kg' },
       { i: 'Apă curată', q: '5 litri' }
     ],
-    limeHow: 'Folosește DOAR var stins/hidratat, niciodată var nestins (bulgări, oxid de calciu).\nPune apa în găleată și adaugă varul treptat, amestecând. Dacă e prea gros, mai pune apă; dacă e prea subțire, nu mări „din ochi” cantitatea de var. Trebuie să se întindă cu pensula ca o vopsea. Prepară doar cât folosești în ziua aceea.\nAplică un strat subțire și uniform pe trunchi, de la bază până la cam 1 m, pe scoarță uscată. NU răzui scoarța sănătoasă: cel mult îndepărtezi cu mâna sau cu o perie moale resturile care se desprind singure (mușchi, scoarță moartă căzută).\nNu adăuga sare, piatră vânătă, gunoi de grajd, ciment, adezivi sau vopsea. Lutul nu e inclus: n-am găsit o sursă cu proporții și date de siguranță.',
+    limeHow: 'Folosește DOAR var stins/hidratat, niciodată var nestins (bulgări, oxid de calciu).\nPune apa în găleată și adaugă varul treptat, amestecând. Dacă e prea gros, mai pune apă; dacă e prea subțire, nu mări „din ochi” cantitatea de var. Trebuie să se întindă cu pensula ca o vopsea. Prepară doar cât folosești în ziua aceea.\nAplică un strat subțire și uniform pe trunchi, de la bază până la cam 1 m, pe scoarță uscată. NU răzui scoarța sănătoasă: cel mult îndepărtezi cu mâna sau cu o perie moale resturile care se desprind singure (mușchi, scoarță moartă căzută).\nNu adăuga sare, piatră vânătă, gunoi de grajd, ciment, adezivi sau vopsea. Lutul nu e inclus în rețetă.',
     limeSafety: [
       'Doar pe scoarță matură și sănătoasă – nu pe frunze, muguri, flori sau fructe și nu pe răni proaspete.',
       'Nu pe pomi foarte tineri, cu scoarța subțire sau sensibilă: acolo varul caustic poate arde scoarța.',

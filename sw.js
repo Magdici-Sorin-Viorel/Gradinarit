@@ -5,7 +5,7 @@
  *
  * IMPORTANT: when you change any file, increase CACHE_VERSION so phones pick up the update.
  */
-var CACHE_VERSION = 'gradina-banat-v33';
+var CACHE_VERSION = 'gradina-banat-v36';
 
 var APP_FILES = [
   './',
