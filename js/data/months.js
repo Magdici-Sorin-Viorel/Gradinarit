@@ -49,7 +49,7 @@ window.MONTH_TASKS = [
   // November
   [{ t: 'Continuă plantarea pomilor și arbuștilor cât solul nu e înghețat.', src: ['dedeman_plant', 'rhs_raspberry'] },
    { t: 'Se seamănă morcov, pătrunjel, ceapă, usturoi și mazăre pentru recoltă timpurie anul viitor.', src: ['agrointel_cal'] },
-   { t: 'Văruirea de toamnă: după căderea frunzelor și înainte de ger, pe trunchi uscat (rețeta naturală e în Livadă).', src: ['zerimar_lime', 'ucipm_whitewash', 'playtech_var'] }],
+   { t: 'Văruirea de toamnă: după căderea frunzelor și înainte de ger, pe trunchi uscat (rețeta naturală e pe cartonașul fiecărui pom, la „Var pe trunchi”).', src: ['zerimar_lime', 'ucipm_whitewash', 'playtech_var'] }],
   // December
   [{ t: 'Coacăzul negru se taie în fiecare iarnă.', src: ['rhs_blackcurrant'] },
    { t: 'Moșmonul se taie iarna, cât e în repaus.', src: ['rhs_medlar'] }]

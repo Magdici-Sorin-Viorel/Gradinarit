@@ -21,7 +21,7 @@
   var SOILTEST_KEY = 'gradina-banat.soiltests.v1'; // [{ id, date, place, ph, method, type, fizz, note }]
   var DONE_KEY = 'gradina-banat.done.v1';   // { '2026': { 'mar|11|Tăiere…': '2026-11-11' } }
   /** Shown in Settings. Keep in step with CACHE_VERSION in sw.js. */
-  var APP_VERSION = 'v36';
+  var APP_VERSION = 'v40';
 
   var viewEl = document.getElementById('view');
   var sheetEl = document.getElementById('sheet');
@@ -34,7 +34,6 @@
   var state = {
     month: currentMonth,
     calTab: 'todo',        // todo | plant | harvest | bloom | orchard | tasks
-    orchardMonth: currentMonth, // month shown on the Livadă page
     calCat: 'all',         // 'all' or a category id
     onlyGarden: false,
     search: '',
@@ -255,7 +254,7 @@
 
     html += '<p class="section-title">💡 Idei pentru ' + MONTHS[m - 1].toLowerCase() + '</p>' +
       '<ul class="tasks ideas">' + ORCHARD.ideas[m - 1].map(function (t) { return '<li>' + esc(t) + '</li>'; }).join('') + '</ul>' +
-      (hideGuideLink ? '' : '<a class="btn secondary" href="#altoire" style="text-decoration:none">🌿 Ghid de altoire: ce pe ce se altoiește</a>');
+      '';
     return html;
   }
 
@@ -266,62 +265,6 @@
       var o = orchardOf(p);
       return WORK_TYPES.some(function (w) { return w.key !== 'lime' && workMonths(o, w.key).indexOf(m) > -1; });
     }).length;
-  }
-
-  /** Grafting guide page. */
-  /** Month selector for the Livadă page (opens on the current month). */
-  function orchardMonthPicker() {
-    var m = state.orchardMonth;
-    var pills = '';
-    for (var i = 1; i <= 12; i++) {
-      pills += '<button type="button" class="month-pill' + (i === currentMonth ? ' is-today' : '') +
-        '" data-omonth="' + i + '" aria-pressed="' + (i === m) + '">' + MONTHS_SHORT[i - 1] + '</button>';
-    }
-    return '<div class="month-head" style="margin-top:14px">' +
-        '<button type="button" class="icon-btn" data-omonth="' + (m === 1 ? 12 : m - 1) + '" aria-label="Luna anterioară">‹</button>' +
-        '<div style="text-align:center"><h2>' + MONTHS[m - 1] + '</h2><div class="season">' +
-          (m === currentMonth ? 'luna curentă' : '<button type="button" class="link-btn" data-omonth="' + currentMonth + '">Înapoi la luna curentă</button>') + '</div></div>' +
-        '<button type="button" class="icon-btn" data-omonth="' + (m === 12 ? 1 : m + 1) + '" aria-label="Luna următoare">›</button>' +
-      '</div><div class="month-strip">' + pills + '</div>';
-  }
-
-  function renderGrafting() {
-    var trees = PLANTS.filter(function (p) { return p.cat === 'trees'; });
-    // Most useful rootstocks first, as asked about most often.
-    var order = ['corcodus', 'gutui', 'mar', 'par', 'prun', 'cais', 'piersic', 'cires', 'visin', 'migdal', 'mosmon', 'castan', 'nuc', 'smochin'];
-    trees.sort(function (a, b) { return order.indexOf(a.id) - order.indexOf(b.id); });
-
-    viewEl.innerHTML =
-      '<div class="page-head"><div><h2>Livadă și altoire</h2><p>Lucrările lunii la pomi, ce poți altoi pe fiecare pom, când și cum, plus varul pe trunchi.</p></div></div>' +
-      orchardMonthPicker() +
-      orchardMonthHtml(state.orchardMonth, true) +
-      '<p class="section-title">🌿 Ghid de altoire</p>' +
-
-      '<div class="note">Regula de bază: se prind doar pomii înrudiți. <b>Sâmburoasele</b> între ele (prun, cais, piersic, migdal pe corcoduș), <b>semințoasele</b> între ele (păr și moșmon pe gutui), iar <b>cireșul cu vișinul</b> formează o grupă separată. Mărul se altoiește doar pe măr.</div>' +
-
-      '<p class="section-title">Ce pui pe fiecare pom</p>' +
-      '<div class="cards">' + trees.map(function (p) {
-        var o = orchardOf(p);
-        var c = catById(p.cat);
-        return '<div class="garden-item" style="--cat-color:' + c.color + ';--soil:' + soilOf(p).g.color + '">' +
-          '<div class="row"><button type="button" class="link" data-open="' + p.id + '"><div class="card-title">Pe ' + esc(p.name.toLowerCase()) + ' poți altoi:</div></button></div>' +
-          '<ul class="hosts">' + o.hosts.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') + '</ul>' +
-          '<p class="warn">⚠️ ' + esc(o.notOn) + '</p>' +
-          '<p class="card-latin" style="font-style:normal">' + esc(p.name) + ' se altoiește pe: ' + esc(o.graftOn) +
-          (o.graft.length ? ' · Luni: ' + monthRanges(o.graft) : '') + '</p>' + '</div>';
-      }).join('') + '</div>' +
-
-      '<p class="section-title">Metode de altoire</p>' +
-      '<div class="cards">' + ORCHARD.methods.map(function (mt) {
-        return '<div class="block" style="margin-top:0"><h3>' + esc(mt.name) + ' <span class="tag">' + monthRanges(mt.months) + '</span></h3><p>' + esc(mt.txt) + '</p>' + '</div>';
-      }).join('') + '</div>' +
-
-      '<div class="note">⚠️ ' + esc(ORCHARD.graftWarn) + '</div>' +
-      '<p class="section-title">Tipuri de tăieri</p>' +
-      '<div class="cards">' + ORCHARD.pruneTypes.map(function (x) {
-        return '<div class="block" style="margin-top:0"><h3>✂️ ' + esc(x.t) + '</h3><p>' + esc(x.d) + '</p></div>';
-      }).join('') + '</div>' +
-      '<div class="block"><h3><span aria-hidden="true">⚪</span>Văruirea pomilor · ' + monthRanges(ORCHARD.limeAutumn) + ' și ' + monthRanges(ORCHARD.limeSpring) + '</h3>' + limeHtml() + '</div>';
   }
 
   /** Escapes text and keeps line breaks. */
@@ -733,7 +676,10 @@
       var add = function (months, icon, t, d) { if (months && months.indexOf(m) > -1) yes.push({ icon: icon, cls: 'a-work', t: t, d: d }); };
       add(o.prune, 'fa-scissors', 'Tăiere / rărirea coroanei acum', o.pruneTxt);
       add(o.thin, 'fa-apple-whole', 'Rărirea fructelor acum', o.thinTxt);
-      add(o.graft, 'fa-code-branch', 'Se poate altoi acum', o.graftTxt);
+      var gm = ORCHARD.methods.filter(function (mt) { return mt.months.indexOf(m) > -1; });
+      add(o.graft, 'fa-code-branch', 'Se poate altoi acum', o.graftTxt +
+        gm.map(function (mt) { return '\nMetoda lunii – ' + mt.name + ': ' + mt.txt; }).join('') +
+        '\nSe altoiește pe: ' + o.graftOn + '.');
       add(o.feed, 'fa-wheat-awn', 'Se dă îngrășământ acum', o.feedTxt);
       o.protect.forEach(function (j) { add(j.m, 'fa-shield-halved', j.t, j.d); });
       add(ORCHARD.lime, 'fa-paint-roller', m === 11 ? 'Văruirea de toamnă acum' : m === 3 ? 'Văruirea de primăvară (dacă mugurii n-au pornit)' : 'Văruirea de primăvară acum', ORCHARD.limeTxt + '\nRețetă: 1 kg var hidratat la 5 l apă (detalii în secțiunea „Var pe trunchi”).');
@@ -1118,6 +1064,8 @@
   }
 
   /** All the information about a plant, split into sections. Each section knows its months. */
+  var GRAFT_RULE = 'Se prind doar pomii înrudiți. <b>Sâmburoasele</b> între ele (prun, cais, piersic, migdal pe corcoduș), <b>semințoasele</b> între ele (păr și moșmon pe gutui), iar <b>cireșul cu vișinul</b> formează o grupă separată. Mărul se altoiește doar pe măr.';
+
   function plantSections(p, skipPlant) {
     var o = orchardOf(p);
     var out = [];
@@ -1136,7 +1084,9 @@
     add('pick', '🧺', 'Recoltare', p.harvest, para(p.pick));
     if (o) {
       add('prune', '✂️', o.thin.length ? 'Tăiere și rărire' : 'Tăiere', uniqMonths(o.prune.concat(o.thin)),
-        para(o.pruneTxt) + (o.thin.length ? '<h5>🍏 Rărirea fructelor · ' + monthRanges(o.thin) + '</h5>' + para(o.thinTxt) : ''));
+        para(o.pruneTxt) + (o.thin.length ? '<h5>🍏 Rărirea fructelor · ' + monthRanges(o.thin) + '</h5>' + para(o.thinTxt) : '') +
+        '<details class="pc-sub"><summary>Tipuri de tăieri</summary><ul class="pc-list">' +
+          ORCHARD.pruneTypes.map(function (x) { return '<li><b>' + esc(x.t) + '</b><br>' + esc(x.d) + '</li>'; }).join('') + '</ul></details>');
       add('protect', '🛡️', 'Protecție: dăunători, îngheț, păsări', o.protectM, o.protect.length ? list(o.protect) : '');
       add('feed', '🌾', 'Hrănire', o.feed, para(o.feedTxt));
       add('lime', '⚪', 'Var pe trunchi', ORCHARD.lime, limeHtml());
@@ -1146,7 +1096,10 @@
         '<ul class="pc-list">' + o.hosts.map(function (h) { return '<li>' + esc(h) + '</li>'; }).join('') + '</ul>' +
         '<p class="warn">⚠️ ' + esc(o.notOn) + '</p>' +
         '<p class="mut">' + esc(ORCHARD.graftWarn) + '</p>' +
-        '<a class="pc-link" href="#altoire">🌿 Ghidul complet de altoire →</a>');
+        '<details class="pc-sub"><summary>Metode de altoire și regula de bază</summary>' +
+          '<p>' + GRAFT_RULE + '</p><ul class="pc-list">' +
+          ORCHARD.methods.map(function (mt) { return '<li><b>' + esc(mt.name) + '</b> <span class="pc-mon">' + monthRanges(mt.months) + '</span><br>' + esc(mt.txt) + '</li>'; }).join('') +
+          '</ul></details>');
     }
     var jobMonths = uniqMonths([].concat.apply([], jobs.map(function (j) { return j.m; })));
     add('care', '🧤', 'Îngrijire', jobMonths, (jobs.length ? list(jobs) : '') + para(p.care));
@@ -1481,7 +1434,6 @@
       '<div class="page-head"><a class="icon-btn" href="#plante" aria-label="Înapoi la categorii" style="text-decoration:none">‹</a>' +
       '<div><h2>' + c.icon + ' ' + esc(c.name) + '</h2><p>' + list.length + ' plante · ' + nowList.length + ' se pot planta în ' + MONTHS[currentMonth - 1].toLowerCase() + '</p></div></div>' +
       '<div class="note">🐝 ' + beeNote(list) + '</div>' +
-      (catId === 'trees' ? '<a class="btn secondary" href="#altoire" style="text-decoration:none;margin-top:12px">🌿 Ghid de altoire și var pe trunchi</a>' : '') +
       (catId === 'trees' || catId === 'shrubs' || catId === 'vines'
         ? '<div class="note">🌳 Lunile de plantare sunt pentru puieți cu rădăcina nudă. Cei la ghiveci se pot planta și în alte luni, cât solul nu e înghețat, evitând perioadele calde și secetoase.</div>' : '') +
       '<div class="note">📅 Lunile sunt orientative pentru zonele joase din România. Au pornit de la calendare de grădină românești și de la datele de îngheț din Câmpia de Vest (ultimul îngheț de primăvară, în medie 26 martie). În zonele mai reci sau la altitudine, primăvara vine de obicei mai târziu: pagina Vreme îți spune, pentru locul tău, dacă e momentul. Lunile de înflorire sunt orientative.</div>' +
@@ -1597,12 +1549,12 @@
   function weatherStripHtml() {
     var st = WEATHER.state();
     if (!st.loc) {
-      return '<a class="wx-strip empty" href="#vreme"><i class="fas fa-cloud-sun" aria-hidden="true"></i>' +
+      return '<a class="wx-strip empty" href="#setari"><i class="fas fa-cloud-sun" aria-hidden="true"></i>' +
         '<span><b>Recomandări după vreme</b><small>' + (WEATHER.state().locating ? 'Caut locația telefonului…' : 'Permite accesul la locație sau alege localitatea în Setări, ca să-ți spun ce merită făcut în zilele următoare.') + '</small></span><i class="fas fa-chevron-right" aria-hidden="true"></i></a>';
     }
     var fc = WEATHER.forecast();
     if (!fc) return '<a class="wx-strip empty" href="#vreme"><i class="fas fa-cloud" aria-hidden="true"></i><span><b>' + esc(st.loc.name) + '</b><small>' +
-      (st.loading ? 'Se descarcă prognoza…' : 'Nu am încă o prognoză. Deschide pagina Vreme când ai internet.') + '</small></span></a>';
+      (st.loading ? 'Se descarcă prognoza…' : 'Nu am încă o prognoză. Se descarcă singură când ai internet.') + '</small></span></a>';
     var adv = ADVISOR.advise(wxCtx(currentMonth));
     var c = fc.current;
     var w = WEATHER.wmo(c ? c.weather_code : fc.days[0].code);
@@ -1633,11 +1585,11 @@
     var attr = '<p class="wx-attr"><a href="' + WEATHER.attribution.url + '" target="_blank" rel="noopener">' + esc(WEATHER.attribution.text) + '</a> · prognozele sunt estimări și pot greși, mai ales după 3 zile.</p>';
 
     if (!st.loc) {
-      viewEl.innerHTML = head + '<div class="set-card">' + locPickerHtml() + '</div>' + attr;
+      viewEl.innerHTML = head + '<div class="set-card"><p>Localitatea se ia automat de la telefon. Dacă nu merge (fără internet sau fără acces la locație), o alegi din Setări.</p><a class="btn" href="#setari" style="text-decoration:none"><i class="fas fa-location-dot" aria-hidden="true"></i> Alege localitatea în Setări</a>' + '</div>' + attr;
       return;
     }
     if (!fc) {
-      viewEl.innerHTML = head + '<div class="set-card">' + locPickerHtml() + wxStatusHtml() + '</div>' + attr;
+      viewEl.innerHTML = head + '<div class="set-card"><p>Localitatea se ia automat de la telefon. Dacă nu merge (fără internet sau fără acces la locație), o alegi din Setări.</p><a class="btn" href="#setari" style="text-decoration:none"><i class="fas fa-location-dot" aria-hidden="true"></i> Alege localitatea în Setări</a>' + wxStatusHtml() + '</div>' + attr;
       return;
     }
 
@@ -1742,7 +1694,7 @@
         '<button type="button" class="btn" data-wxhist><i class="fas fa-download" aria-hidden="true"></i> Descarcă acum</button>') + '</div>';
 
     viewEl.innerHTML = head + now + advHtml + daysHtml + hourHtml + soilHtml + waterHtml + frostHtml +
-      '<p class="section-title">Localitatea</p><div class="set-card">' + locPickerHtml() + '</div>' + attr;
+      '<p class="wx-note mut">Localitate: <b>' + esc(st.loc.name) + '</b> · o schimbi din <a href="#setari">Setări</a>.</p>' + attr;
   }
 
   // ------------------------------------------------------------------
@@ -1761,7 +1713,7 @@
     neighbours(p).forEach(function (r) { ids = ids.concat(r.src); });
     if (soilOf(p).rot) ids = ids.concat(Z.rotSrc);
     var o = orchardOf(p);
-    if (o) ids = ids.concat(o.src || [], o.protectSrc || [], ORCHARD.limeSrc || [], ORCHARD.waterlogSrc || [], ORCHARD.feedSrc || [], ORCHARD.graftWarnSrc || []);
+    if (o) ids = ids.concat(o.src || [], o.protectSrc || [], ORCHARD.limeSrc || [], ORCHARD.waterlogSrc || [], ORCHARD.feedSrc || [], ORCHARD.graftWarnSrc || [], ORCHARD.pruneTypesSrc || [], [].concat.apply([], ORCHARD.methods.map(function (mt) { return mt.src || []; })));
     return ids;
   }
 
@@ -1804,7 +1756,9 @@
       '<div class="page-head"><div><h2>⚙️ Setări</h2><p>Aspect, poze și sursele tuturor informațiilor din aplicație.</p></div></div>' +
       '<div class="set-card"><h3><i class="fas fa-circle-info" aria-hidden="true"></i>Versiunea aplicației</h3><p><b>' + APP_VERSION + '</b> · dacă vezi alt număr decât cel nou, închide aplicația de tot și deschide-o din nou.</p></div>' +
       shareHtml() +
-      '<div class="set-card"><h3><i class="fas fa-location-dot" aria-hidden="true"></i>Localitatea (pentru vreme)</h3>' + locPickerHtml() + '</div>' +
+      '<div class="set-card"><h3><i class="fas fa-cloud-sun" aria-hidden="true"></i>Vremea și grădina</h3>' + locPickerHtml() +
+        '<a class="btn secondary" href="#vreme" style="text-decoration:none"><i class="fas fa-cloud-sun" aria-hidden="true"></i> Prognoza și recomandările complete</a></div>' +
+      navOrderHtml() +
       backupHtml() +
       '<div class="set-card"><h3><i class="fas fa-circle-half-stroke" aria-hidden="true"></i>Aspect</h3>' +
         '<button type="button" class="btn secondary" data-theme-toggle><i class="fas ' + (light ? 'fa-moon' : 'fa-sun') + '" aria-hidden="true"></i><span>' + (light ? 'Temă închisă' : 'Temă deschisă') + '</span></button></div>' +
@@ -2109,7 +2063,6 @@
   var TAB_INFO = {
     calendar: { title: 'Calendar', icon: 'fa-calendar-days' },
     plante: { title: 'Plante', icon: 'fa-seedling' },
-    livada: { title: 'Livadă și altoire', icon: 'fa-tree' },
     gradina: { title: 'Grădina mea', icon: 'fa-heart' },
     setari: { title: 'Setări', icon: 'fa-gear' },
     vreme: { title: 'Vremea și grădina', icon: 'fa-cloud-sun' }
@@ -2118,10 +2071,9 @@
   /** Highlights the current section in the bottom bar and side menu, and updates the top bar title. */
   function setActiveTab(hash) {
     var tab = hash.indexOf('#plante') === 0 || hash.indexOf('#sol') === 0 ? 'plante'
-      : hash.indexOf('#altoire') === 0 ? 'livada'
       : hash.indexOf('#gradina') === 0 ? 'gradina'
       : hash.indexOf('#setari') === 0 ? 'setari'
-      : hash.indexOf('#vreme') === 0 ? 'vreme'
+      : hash.indexOf('#vreme') === 0 ? 'setari'
       : 'calendar';
     document.querySelectorAll('[data-tab]').forEach(function (a) {
       var on = a.getAttribute('data-tab') === tab;
@@ -2138,6 +2090,37 @@
   // ------------------------------------------------------------------
   // Theme: dark by default (like BeeManager), light on request
   // ------------------------------------------------------------------
+
+  // ------------------------------------------------------------------
+  // Order of the main pages (chosen in Settings). The first one is the start page.
+  // ------------------------------------------------------------------
+  var NAV_PAGES = { calendar: 'Calendar', plante: 'Plante', gradina: 'Grădina mea' };
+  var NAV_DEFAULT = ['calendar', 'plante', 'gradina'];
+  function navOrder() {
+    var o = Array.isArray(prefs.navOrder) ? prefs.navOrder.filter(function (k, i, a) { return NAV_PAGES[k] && a.indexOf(k) === i; }) : [];
+    NAV_DEFAULT.forEach(function (k) { if (o.indexOf(k) < 0) o.push(k); });
+    return o;
+  }
+  /** Puts the links of the bottom bar and of the side menu in the chosen order. */
+  function applyNavOrder() {
+    var order = navOrder();
+    document.querySelectorAll('.mob-nav, .sb-nav').forEach(function (nav) {
+      order.forEach(function (k) {
+        var a = nav.querySelector('[data-tab="' + k + '"]');
+        if (a) nav.appendChild(a);
+      });
+    });
+  }
+  function navOrderHtml() {
+    var order = navOrder();
+    return '<div class="set-card"><h3><i class="fas fa-arrow-down-short-wide" aria-hidden="true"></i>Ordinea paginilor</h3>' +
+      '<p class="mut">Aranjează paginile din bara de jos. <b>Prima pagină</b> e cea cu care se deschide aplicația.</p>' +
+      '<ol class="nav-order">' + order.map(function (k, i) {
+        return '<li><span class="no-n">' + (i + 1) + '</span><span class="no-t">' + esc(NAV_PAGES[k]) + (i === 0 ? ' <small>se deschide prima</small>' : '') + '</span>' +
+          '<button type="button" class="icon-btn" data-navmove="' + k + '" data-dir="-1"' + (i === 0 ? ' disabled' : '') + ' aria-label="Mută mai sus: ' + esc(NAV_PAGES[k]) + '"><i class="fas fa-arrow-up" aria-hidden="true"></i></button>' +
+          '<button type="button" class="icon-btn" data-navmove="' + k + '" data-dir="1"' + (i === order.length - 1 ? ' disabled' : '') + ' aria-label="Mută mai jos: ' + esc(NAV_PAGES[k]) + '"><i class="fas fa-arrow-down" aria-hidden="true"></i></button></li>';
+      }).join('') + '</ol></div>';
+  }
 
   function applyTheme() {
     var light = prefs.theme === 'light';
@@ -2162,7 +2145,6 @@
 
     if (route === 'plante' && parts[1]) renderCategory(parts[1]);
     else if (route === 'plante') renderCategories();
-    else if (route === 'altoire') renderGrafting();
     else if (route === 'sol') renderSoil();
     else if (route === 'setari') renderSettings();
     else if (route === 'vreme') renderWeather();
@@ -2175,7 +2157,7 @@
     // Sub-pages get a floating X that goes back to the section's main page.
     var pc = document.getElementById('page-close');
     if (pc) {
-      var parent = route === 'plante' && parts[1] ? '#plante' : route === 'sol' ? '#plante' : route === 'setari' ? '#calendar' : null;
+      var parent = route === 'plante' && parts[1] ? '#plante' : route === 'sol' ? '#plante' : route === 'setari' ? '#calendar' : route === 'vreme' ? '#setari' : null;
       pc.hidden = !parent;
       if (parent) pc.setAttribute('href', parent);
     }
@@ -2189,6 +2171,8 @@
     var hash = location.hash || '#calendar';
     // The jobs page was merged into Grădina mea; old links go there.
     if (hash.indexOf('#azi') === 0) { history.replaceState(null, '', '#gradina'); hash = '#gradina'; }
+    // The orchard page was removed: its content is on each tree's card.
+    if (hash.indexOf('#altoire') === 0) { history.replaceState(null, '', '#plante-trees'); hash = '#plante-trees'; }
 
     if (hash.indexOf('#p-') === 0) {
       // Detail sheet: render the page beneath first if needed (deep link / reload).
@@ -2366,6 +2350,17 @@
       return;
     }
 
+    var nm = e.target.closest('[data-navmove]');
+    if (nm && !nm.disabled) {
+      var ord = navOrder(), ki = ord.indexOf(nm.getAttribute('data-navmove')), kj = ki + (+nm.getAttribute('data-dir'));
+      if (ki > -1 && kj >= 0 && kj < ord.length) {
+        var tmp = ord[ki]; ord[ki] = ord[kj]; ord[kj] = tmp;
+        prefs.navOrder = ord; saveJson(PREFS_KEY, prefs);
+        applyNavOrder(); refresh();
+        toast('Aplicația se va deschide cu: ' + NAV_PAGES[ord[0]]);
+      }
+      return;
+    }
     if (e.target.closest('[data-theme-toggle]')) {
       prefs.theme = prefs.theme === 'light' ? 'dark' : 'light';
       saveJson(PREFS_KEY, prefs);
@@ -2391,13 +2386,6 @@
     }
     if (t.hasAttribute('data-close')) { closeSheet(); return; }
 
-    if (t.hasAttribute('data-omonth')) {
-      state.orchardMonth = parseInt(t.getAttribute('data-omonth'), 10);
-      renderGrafting();
-      var sel = viewEl.querySelector('.month-pill[aria-pressed="true"]');
-      if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest', inline: 'center' });
-      return;
-    }
     if (t.hasAttribute('data-month')) {
       var m = parseInt(t.getAttribute('data-month'), 10);
       state.calCat = 'all';
@@ -2490,7 +2478,6 @@
     if (nowM !== currentMonth) {
       currentMonth = nowM;
       state.month = nowM;
-      state.orchardMonth = nowM;
       refresh();
     }
   });
@@ -2513,11 +2500,11 @@
   window.addEventListener('online', function () { updatePhotoStatus(); syncAllPhotos(); });
   window.addEventListener('offline', updatePhotoStatus);
 
-  // Always open on the current month: a saved month from an earlier visit is not reused.
-  // The app always opens on the calendar of the current month.
-  if (!location.hash || location.hash.indexOf('#calendar') === 0 || location.hash.indexOf('#p-') === 0) {
-    history.replaceState(null, '', '#calendar');
-  }
+  // The app opens on the first page of the order chosen in Settings (the calendar by default,
+  // always on the current month: a month saved from an earlier visit is not reused).
+  applyNavOrder();
+  if (!location.hash || location.hash.indexOf('#p-') === 0) history.replaceState(null, '', '#' + navOrder()[0]);
+  else if (location.hash.indexOf('#calendar') === 0) history.replaceState(null, '', '#calendar');
   route();
 
   // Soil test form.

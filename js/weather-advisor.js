@@ -45,6 +45,11 @@
     if (diff === -1) return 'ieri';
     return DAYS[new Date(iso + 'T12:00:00').getDay()];
   }
+  /** Like dayName, but days after tomorrow also carry the date ("marți 17.11"), so it is clear which week is meant. */
+  function dayLabel(iso) {
+    var n = dayName(iso);
+    return n === 'azi' || n === 'mâine' || n === 'ieri' ? n : n + ' ' + iso.slice(8, 10) + '.' + iso.slice(5, 7);
+  }
   var MONTHS_RO = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie'];
   /** "MM-DD" -> "12 aprilie". */
   function mdName(md) { return md ? (+md.slice(3)) + ' ' + MONTHS_RO[+md.slice(0, 2) - 1] : ''; }
@@ -237,7 +242,7 @@
       if (fig.length && (m >= 10 || m <= 3)) items.push({ t: 'Smochin: după căderea frunzelor, învelește-l cu paie și agrotextil; ghivecele la adăpost, neîncălzit.', ids: ['smochin'], src: ['rhs_fig'] });
       items.push({ t: 'Nu da hrană bogată în azot târziu în sezon și nu tăia imediat ce a înghețat: taie părțile afectate abia după ce trece riscul de îngheț.', src: ['rhs_frost'] });
       out.push({
-        lvl: 'warn', icon: '❄️', title: 'Îngheț ' + fd.map(function (d) { return dayName(d.date, days.indexOf(d)); }).join(', ') + ' (min ' + r1(min3) + ' °C)',
+        lvl: 'warn', icon: '❄️', title: 'Îngheț ' + fd.map(function (d) { return dayLabel(d.date, days.indexOf(d)); }).join(', ') + ' (min ' + r1(min3) + ' °C)',
         why: 'Prognoza dă temperaturi minime sub 0 °C în următoarele 3 zile.', items: items
       });
     } else if (min3 != null && min3 <= T.frostRiskMin) {
@@ -322,7 +327,7 @@
     if (max7 >= T.heat) {
       var hot = days.filter(function (d) { return d.tmax >= T.heat; });
       out.push({
-        lvl: 'warn', icon: '🔥', title: 'Caniculă: până la ' + r1(max7) + ' °C (' + hot.map(function (d) { return dayName(d.date, days.indexOf(d)); }).join(', ') + ')',
+        lvl: 'warn', icon: '🔥', title: 'Caniculă: până la ' + r1(max7) + ' °C (' + hot.map(function (d) { return dayLabel(d.date, days.indexOf(d)); }).join(', ') + ')',
         why: 'Prag orientativ: ' + T.heat + ' °C.',
         items: [
           { t: 'Verifică umiditatea solului la 5–10 cm adâncime înainte să uzi; udă dimineața devreme sau seara, nu la prânz.' },
@@ -348,8 +353,8 @@
     if (windy.length && days.indexOf(windy[0]) <= 3) {
       var wmax = Math.max.apply(null, windy.map(function (d) { return d.gust != null ? d.gust : d.wind; }));
       out.push({
-        lvl: 'warn', icon: '💨', title: 'Vânt puternic ' + windy.map(function (d) { return dayName(d.date, days.indexOf(d)); }).join(', ') + ' (rafale până la ' + Math.round(wmax) + ' km/h)',
-        why: 'Prag orientativ: rafale de ' + T.gust + ' km/h sau vânt de ' + T.windMax + ' km/h.',
+        lvl: days.indexOf(windy[0]) <= 2 ? 'warn' : 'watch', icon: '💨', title: 'Vânt puternic ' + windy.map(function (d) { return dayLabel(d.date, days.indexOf(d)); }).join(', ') + ' (rafale până la ' + Math.round(wmax) + ' km/h)',
+        why: 'Prag orientativ: rafale de ' + T.gust + ' km/h sau vânt de ' + T.windMax + ' km/h.' + (days.indexOf(windy[0]) > 2 ? ' E prognoză pentru peste câteva zile, deci se mai poate schimba.' : ''),
         items: [
           { t: 'Verifică aracii și legăturile pomilor tineri, ale plantelor înalte (roșii, porumb, floarea-soarelui) și ale cățărătoarelor.' },
           { t: 'Prinde bine agrotextilul și plasele.' },
@@ -361,7 +366,7 @@
     // ---- 7. Hail ---------------------------------------------------------
     var hail = days.filter(function (d) { return d.code === 96 || d.code === 99; });
     if (hail.length) {
-      out.push({ lvl: 'warn', icon: '⛈️', title: 'Furtună cu grindină posibilă ' + hail.map(function (d) { return dayName(d.date, days.indexOf(d)); }).join(', '),
+      out.push({ lvl: 'warn', icon: '⛈️', title: 'Furtună cu grindină posibilă ' + hail.map(function (d) { return dayLabel(d.date, days.indexOf(d)); }).join(', '),
         why: 'Prognoza dă cod de furtună cu grindină. Prognozele de grindină sunt nesigure.',
         items: [{ t: 'Adu ghivecele și răsadurile la adăpost; acoperă ce poți (plasă, agrotextil prins bine).' }] });
     }
@@ -403,7 +408,7 @@
           next && (next.rain || 0) < 1 && next.tmin > 0;
       });
       out.push(good.length
-        ? { lvl: 'rec', icon: '⚪', title: 'Zi bună pentru văruirea pomilor: ' + dayName(good[0].date, days.indexOf(good[0])),
+        ? { lvl: 'rec', icon: '⚪', title: 'Zi bună pentru văruirea pomilor: ' + dayLabel(good[0].date, days.indexOf(good[0])),
             why: 'Fără ploaie și fără ger în ziua aceea și a doua zi (min ' + r1(good[0].tmin) + ' °C), fără căldură mare.',
             items: [{ t: 'Rețeta: 1 kg var hidratat la 5 l apă, pe trunchi uscat. Mănuși și ochelari.', src: O.limeSrc }] }
         : { lvl: 'watch', icon: '⚪', title: 'Văruirea pomilor: așteaptă o zi potrivită',
