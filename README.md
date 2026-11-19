@@ -76,3 +76,4 @@ Chei noi în localStorage: `gradina-banat.done.v1` (bife pe an), `gradina-banat.
 - **v38:** pagina „Livadă și altoire” a fost scoasă; tipurile de tăieri, regula și metodele de altoire sunt acum pe cartonașul fiecărui pom, iar lucrarea „Se poate altoi acum” arată metoda lunii. Linkul vechi #altoire duce la Pomi.
 - **v39:** „Vremea și grădina” nu mai e în bara de jos: se deschide din Setări sau din banda de vreme de pe Calendar și Grădina mea. Localitatea se alege doar în Setări.
 - **v40:** ordinea paginilor (Calendar, Plante, Grădina mea) se alege din Setări; prima pagină e cea cu care se deschide aplicația.
+- **v41:** tema TRK (consolă albastru-închis, portocaliu/mov/cyan) e tema implicită; în Setări → Aspect alegi între TRK, Închisă și Deschisă.

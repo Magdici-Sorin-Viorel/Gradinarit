@@ -21,7 +21,7 @@
   var SOILTEST_KEY = 'gradina-banat.soiltests.v1'; // [{ id, date, place, ph, method, type, fizz, note }]
   var DONE_KEY = 'gradina-banat.done.v1';   // { '2026': { 'mar|11|Tăiere…': '2026-11-11' } }
   /** Shown in Settings. Keep in step with CACHE_VERSION in sw.js. */
-  var APP_VERSION = 'v40';
+  var APP_VERSION = 'v41';
 
   var viewEl = document.getElementById('view');
   var sheetEl = document.getElementById('sheet');
@@ -1750,8 +1750,6 @@
         [].concat.apply([], ORCHARD.methods.map(function (mt) { return mt.src || []; })));
     var all = Object.keys(window.SOURCES).map(function (k) { return window.SOURCES[k]; })
       .sort(function (a, b) { return a.t.localeCompare(b.t, 'ro'); });
-    var light = prefs.theme === 'light';
-
     viewEl.innerHTML =
       '<div class="page-head"><div><h2>⚙️ Setări</h2><p>Aspect, poze și sursele tuturor informațiilor din aplicație.</p></div></div>' +
       '<div class="set-card"><h3><i class="fas fa-circle-info" aria-hidden="true"></i>Versiunea aplicației</h3><p><b>' + APP_VERSION + '</b> · dacă vezi alt număr decât cel nou, închide aplicația de tot și deschide-o din nou.</p></div>' +
@@ -1761,7 +1759,7 @@
       navOrderHtml() +
       backupHtml() +
       '<div class="set-card"><h3><i class="fas fa-circle-half-stroke" aria-hidden="true"></i>Aspect</h3>' +
-        '<button type="button" class="btn secondary" data-theme-toggle><i class="fas ' + (light ? 'fa-moon' : 'fa-sun') + '" aria-hidden="true"></i><span>' + (light ? 'Temă închisă' : 'Temă deschisă') + '</span></button></div>' +
+        themePickHtml() + '</div>' +
       '<div class="set-card"><h3><i class="fas fa-camera" aria-hidden="true"></i>Poze</h3>' +
         '<div class="photo-status" id="photo-status"><i class="fas fa-camera" aria-hidden="true"></i><span></span>' +
         '<button type="button" class="link-btn" data-sync-photos hidden>Descarcă acum</button></div></div>' +
@@ -1845,7 +1843,7 @@
     var wx = WEATHER.state();
     return {
       app: 'gradinarit', format: 1, exported: new Date().toISOString(), version: APP_VERSION,
-      garden: garden, done: done, prefs: { theme: prefs.theme || null },
+      garden: garden, done: done, prefs: { theme: currentTheme() },
       place: wx.loc && !wx.loc.auto ? { name: wx.loc.name, lat: wx.loc.lat, lon: wx.loc.lon, elev: wx.loc.elev, county: wx.loc.county } : null,
       soilTests: window.SOILTESTS ? SOILTESTS.all() : undefined
     };
@@ -1892,7 +1890,7 @@
     });
     saveJson(STORAGE_KEY, garden);
     saveJson(DONE_KEY, done);
-    if (b.prefs && (b.prefs.theme === 'light' || b.prefs.theme === 'dark')) { prefs.theme = b.prefs.theme; saveJson(PREFS_KEY, prefs); applyTheme(); }
+    if (b.prefs && (b.prefs.theme === 'light' || b.prefs.theme === 'dark' || b.prefs.theme === 'trk')) { prefs.theme = b.prefs.theme; saveJson(PREFS_KEY, prefs); applyTheme(); }
     var p = b.place;
     if (p && typeof p.lat === 'number' && typeof p.lon === 'number' && p.lat > 43 && p.lat < 49 && p.lon > 20 && p.lon < 30.5 && !WEATHER.state().loc) {
       WEATHER.setLocation({ name: String(p.name || 'Localitatea mea').slice(0, 80), lat: p.lat, lon: p.lon, elev: typeof p.elev === 'number' ? p.elev : null, county: String(p.county || '').slice(0, 40) });
@@ -2122,18 +2120,34 @@
       }).join('') + '</ol></div>';
   }
 
+  // Themes: 'trk' (default), 'dark' and 'light'. Chosen in Settings, kept in prefs.theme.
+  var THEMES = [
+    { id: 'trk', name: 'TRK', note: 'consolă, albastru-închis', sw: ['#05070c', '#f5a14b', '#a77ac5', '#5bb6c9'], bar: '#05070c' },
+    { id: 'dark', name: 'Închisă', note: 'negru și auriu', sw: ['#0f0e0e', '#222121', '#e6b422', '#f5f3ef'], bar: '#0f0e0e' },
+    { id: 'light', name: 'Deschisă', note: 'crem și auriu', sw: ['#fefaf0', '#ffffff', '#e6b422', '#1f1b13'], bar: '#fff7e8' }
+  ];
+  function currentTheme() {
+    var t = prefs.theme;
+    return t === 'dark' || t === 'light' || t === 'trk' ? t : 'trk';
+  }
   function applyTheme() {
-    var light = prefs.theme === 'light';
-    document.body.classList.toggle('light', light);
-    document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
-      var i = b.querySelector('i');
-      if (i) i.className = 'fas ' + (light ? 'fa-moon' : 'fa-sun');
-      var label = b.querySelector('span');
-      if (label) label.textContent = light ? 'Temă închisă' : 'Temă deschisă';
-      b.setAttribute('aria-label', light ? 'Treci la tema închisă' : 'Treci la tema deschisă');
-    });
+    var t = currentTheme();
+    document.body.classList.toggle('light', t === 'light');
+    document.body.classList.toggle('trk', t === 'trk');
+    var th = THEMES.filter(function (x) { return x.id === t; })[0];
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', light ? '#fff7e8' : '#0f0e0e');
+    if (meta) meta.setAttribute('content', th.bar);
+    document.querySelectorAll('[data-theme-set]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-theme-set') === t ? 'true' : 'false');
+    });
+  }
+  function themePickHtml() {
+    var t = currentTheme();
+    return '<div class="theme-pick" role="group" aria-label="Tema aplicației">' + THEMES.map(function (x) {
+      return '<button type="button" class="theme-opt" data-theme-set="' + x.id + '" aria-pressed="' + (x.id === t) + '">' +
+        '<span class="theme-sw" aria-hidden="true">' + x.sw.map(function (c) { return '<i style="background:' + c + '"></i>'; }).join('') + '</span>' +
+        '<span>' + esc(x.name) + '</span><small>' + esc(x.note) + '</small></button>';
+    }).join('') + '</div>';
   }
 
   function renderBase(hash, scrollTop) {
@@ -2361,8 +2375,9 @@
       }
       return;
     }
-    if (e.target.closest('[data-theme-toggle]')) {
-      prefs.theme = prefs.theme === 'light' ? 'dark' : 'light';
+    var ts = e.target.closest('[data-theme-set]');
+    if (ts) {
+      prefs.theme = ts.getAttribute('data-theme-set');
       saveJson(PREFS_KEY, prefs);
       applyTheme();
       return;
